@@ -1,5 +1,4 @@
 // Earth3Dsimulation.js
-
 import * as THREE from "three";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -31,7 +30,6 @@ import {
 } from "./parametersimulation.js";
 
 
-// ============= EARTH ROTATION PRECISION MANAGER =============
 class EarthRotationManager {
     constructor() {
         this.baseEpochUTC = 0;
@@ -743,8 +741,7 @@ function createSatelliteLabel(sat) {
     div.style.textAlign = 'center';
     
     const label = new CSS2DObject(div);
-    // Position label above the satellite (increased offset for close view)
-    label.position.set(0, 0.05, 0); // Increased from 0.02 to 0.05
+    label.position.set(0, 0.05, 0); 
     label.visible = window.labelVisibilityEnabled;
     
     sat.labelObject = label;
@@ -763,9 +760,6 @@ window.highlightSatelliteInScene = function(id) {
             mat.color.setHex(sat.id === id ? 0x00ff00 : 0x0000ff);
             if (mat.emissive) mat.emissive.setHex(sat.id === id ? 0x00ff00 : 0x000000);
         }
-        
-        // Remove the green highlight for GLB models
-        // Just keep the default appearance, no emissive changes
         
         if (sat._labelElement) {
             sat._labelElement.style.color = sat.id === id ? 'limegreen' : 'white';
@@ -791,8 +785,7 @@ window.highlightSatelliteInScene = function(id) {
             sat._labelElement.style.border = 'none';
         }
         
-        // REMOVED: Camera centering code
-        // The camera will now stay in its current position when selecting a satellite
+    
     });
 };
 
@@ -919,8 +912,7 @@ window.highlightGroundStationInScene = function(id) {
         if (gs._labelElement) {
             gs._labelElement.style.color = gs.id === id ? 'cyan' : 'white';
         }
-        // REMOVED: Camera centering code
-        // The camera will now stay in its current position when selecting a ground station
+      
     });
 };
 
@@ -1404,13 +1396,10 @@ function load3DSimulationState() {
     // Restore all satellites and constellations from the fileOutputs map
     window.fileOutputs.forEach(data => {
         if (data.fileType === 'single') {
-            // For single satellites, just add them to the scene
             if (typeof window.addOrUpdateSatelliteInScene === 'function') {
                 window.addOrUpdateSatelliteInScene(data);
             }
         } else if (data.fileType === 'constellation') {
-            // This logic is replicated from the viewSimulation function to generate
-            // constellations without clearing the scene for each one.
             const params = data;
             const satList = [];
             const baseParams = {
@@ -1530,7 +1519,6 @@ function load3DSimulationState() {
 // Expose the function to the global window object so it can be called from simulation.blade.php
 window.load3DSimulationState = load3DSimulationState;
 
-// ================== ADDED FUNCTIONS START ==================
 // Utility functions for satellite data calculations Display
 function toDeg(rad) {
   return (rad * 180/Math.PI).toFixed(2);
@@ -1560,24 +1548,14 @@ function updateSatellitePopup() {
         return;
     }
 
-    // --- CORRECTED LOGIC STARTS HERE ---
-
-    // 1. Get the semi-major axis in scene units directly from the satellite's parameters.
     const semiMajorAxisSceneUnits = sat.params.semiMajorAxis;
-
-    // 2. Convert the semi-major axis from scene units to kilometers for the physics calculation.
     const semiMajorAxisKm = semiMajorAxisSceneUnits * (EarthRadius / SCENE_EARTH_RADIUS);
-
-    // 3. Get the satellite's current true anomaly to calculate instantaneous velocity.
     const nuRad = sat.currentTrueAnomaly;
-
-    // 4. Call the calculation function with the CORRECT semi-major axis in kilometers.
     const { orbitalVelocity, orbitalPeriod } = calculateDerivedOrbitalParameters(
         semiMajorAxisKm,
         sat.params.eccentricity,
         nuRad
     );
-    // --- CORRECTED LOGIC ENDS HERE ---
     // Update the text content of all the data fields in the popup
     element.querySelector('.altitude').textContent = computeAltitude(sat);
     element.querySelector('.inclination').textContent = toDeg(sat.params.inclinationRad);
@@ -1619,7 +1597,7 @@ window.generateConstellationFromLinkBudget = function(linkBudgetData) {
     
     window.viewSimulation(constellationParams);
 };
-// =================== ADDED FUNCTIONS END ===================
+
 function animate() {
     requestAnimationFrame(animate);
     const currentTime = performance.now();
@@ -1693,12 +1671,8 @@ function animate() {
             controls.minDistance = SCENE_EARTH_RADIUS * 0.01;
             controls.maxDistance = SCENE_EARTH_RADIUS * 0.2;
             
-            // Label adjustment for close view
             if (selectedSat.labelObject) {
-                // Ensure label is always visible and positioned well above the satellite
                 selectedSat.labelObject.visible = true;
-                
-                // Dynamically adjust label height based on camera distance
                 const distanceToCamera = camera.position.distanceTo(selectedSat.mesh.position);
                 const labelHeight = Math.max(0.05, Math.min(0.1, distanceToCamera * 0.1));
                 selectedSat.labelObject.position.set(0, labelHeight, 0);

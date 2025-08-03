@@ -267,7 +267,6 @@ function draw2D() {
         ctx.lineWidth = 1;
         ctx.stroke();
 
-        // ================== FIX START ==================
         // Only draw the label if global visibility is enabled
         if (window.labelVisibilityEnabled) {
             ctx.font = '12px Arial';
@@ -278,7 +277,6 @@ function draw2D() {
             ctx.fillText(sat.name, x + 10, y + 5); // Offset text from point
             ctx.shadowBlur = 0; // Reset shadow
         }
-        // =================== FIX END ===================
       }
     }
   });

@@ -1064,7 +1064,6 @@
                 <button class="zoom-button" id="zoomInButton">+</button>
                 <button class="zoom-button" id="zoomOutButton">-</button>
             </div>
-            <!-- 2. Alternative: Add floating label controls (place after zoom-controls div) -->
             <div class="label-controls">
                 <button class="label-button" id="toggleNadirFloatBtn" title="Toggle Nadir Lines">
                     <i class="fas fa-arrow-down"></i>
@@ -1136,9 +1135,7 @@
         import { DEG2RAD, EarthRadius, MU_EARTH, SCENE_EARTH_RADIUS } from "{{ Vite::asset('resources/js/parametersimulation.js') }}";
         import { solveKepler, E_to_TrueAnomaly, TrueAnomaly_to_E, E_to_M, calculateDerivedOrbitalParameters } from "{{ Vite::asset('resources/js/orbitalCalculation.js') }}";
         import { calculateLinkBudget } from "{{ Vite::asset('resources/js/linkBudgetCalculations.js') }}";
-        // import * as THREE from "three";
-        // window.THREE = THREE; // so your inline checkVisibility can see it
-
+        
         const LOCAL_STORAGE_HISTORY_KEY = 'appHistory';
         const LOCAL_STORAGE_HISTORY_INDEX_KEY = 'appHistoryIndex';
 
@@ -1173,7 +1170,7 @@
         //Close View :
         let prevSatFollowPos = new THREE.Vector3();
         let followOffset = new THREE.Vector3();
-        window.updateSunDirection = null; // Will be set by Earth3Dsimulation.js
+        window.updateSunDirection = null; 
 
 
         function saveFilesToLocalStorage() {
@@ -1292,10 +1289,8 @@
             else if (fileType === 'linkBudget') editLinkBudget(fileName);
         }
 
-        // ----------------------
-        // ensure Output tab shows the latest files + sats
+       
         window.updateOutputTabForFile = function(fileName, fileType) {
-        // simplest: just rebuild the entire list
         populateReportsList();
         };
 
@@ -1318,7 +1313,6 @@
         }
 
         
-        // ================== FIX START: Corrected Delete Logic ==================
         function deleteFile(fileName, fileType) {
             let satIdsToDelete = [];
             let isDeletingSelectedSat = false;
@@ -1351,7 +1345,7 @@
             // Check if we're deleting the currently selected satellite
             isDeletingSelectedSat = window.selectedSatelliteId && satIdsToDelete.includes(window.selectedSatelliteId);
 
-            // If we are in close view and deleting the viewed satellite, return to normal view first
+            // If the selected satellite is being deleted, reset the view   
             if (window.closeViewEnabled && isDeletingSelectedSat) {
                 // Force return to normal view
                 window.closeViewEnabled = false;
@@ -1379,10 +1373,9 @@
             // Clear selection before deletion to prevent any camera snap
             if (isDeletingSelectedSat) {
                 window.selectedSatelliteId = null;
-                window.highlightSatelliteInScene(null); // Un-highlight
+                window.highlightSatelliteInScene(null); 
             }
             
-            // Now perform the actual deletion
             if (fileType === 'single' || fileType === 'constellation') {
                 satIdsToDelete.forEach(id => removeSatelliteFromScene(id));
                 fileOutputs.delete(fileName);
@@ -1403,9 +1396,7 @@
             populateResourceTab();
             populateReportsList();
         }
-        // =================== FIX END: Corrected Delete Logic ===================
 
-        // --- This is the only function that needed changes ---
         function populateReportsList() {
             const reportsList = document.getElementById('reports-list');
             reportsList.innerHTML = '';
@@ -1430,14 +1421,13 @@
                     satLi.textContent = s.fileName;
                     satLi.style.cursor = 'pointer';
                     
-                    // ================== FIX START: Satellite Selection ==================
                     satLi.addEventListener('click', function(e) {
                         e.stopPropagation();
                         window.selectedSatelliteId = s.fileName; // Set the global selected ID
                         window.highlightSatelliteInScene(s.fileName); // Highlight in 3D view
                         showSatellitePopup(s.fileName); // Show the info popup
                     });
-                    // =================== FIX END: Satellite Selection ===================
+                    
                     
                     singleSubList.appendChild(satLi);
                 });
@@ -1464,7 +1454,6 @@
                             satLi.dataset.id = satId;
                             satLi.dataset.type = 'single';
                             
-                            // ================== FIX START: Satellite Selection ==================
                             satLi.addEventListener('click', (function(capturedSatId) {
                                 return function(e) {
                                     e.stopPropagation();
@@ -1473,7 +1462,7 @@
                                     showSatellitePopup(capturedSatId); // Show the info popup
                                 };
                             })(satId));
-                            // =================== FIX END: Satellite Selection ===================
+                          
                             
                             subSatUl.appendChild(satLi);
                         }
@@ -1528,7 +1517,6 @@
         }   
 
 // ---------------- showSatellitePopup ----------------
-// This function should be in your simulation.blade.php file
 function showSatellitePopup(satId) {
     // 1) Close old popup and unsubscribe its updater
     if (window.activeSatellitePopup) {
@@ -1569,7 +1557,6 @@ function showSatellitePopup(satId) {
 
     // 4) The updater function
     const updatePopup = () => {
-        // --- CORRECTED LOGIC STARTS HERE ---
         // 1. Get the semi-major axis in scene units from the satellite's parameters.
         const semiMajorAxisSceneUnits = sat.params.semiMajorAxis;
         // 2. Convert it to kilometers. This is a constant for the orbit.
@@ -1583,7 +1570,6 @@ function showSatellitePopup(satId) {
             sat.params.eccentricity,
             nuRad
         );
-        // --- CORRECTED LOGIC ENDS HERE ---
 
         // write into spans
         popup.querySelector('.altitude').textContent      = computeAltitude(sat);
@@ -1638,8 +1624,6 @@ function showSatellitePopup(satId) {
             document.body.appendChild(popup);
             makeDraggable(popup);
 
-            // HAPUS listener untuk tombol .popup-close, HANYA Sisakan untuk .custom-popup-close-btn (X)
-            // popup.querySelector('.popup-close').addEventListener('click', () => popup.remove());
             popup.querySelector('.custom-popup-close-btn').addEventListener('click', () => popup.remove());
         }
 
@@ -1673,9 +1657,6 @@ function showSatellitePopup(satId) {
         .getElementById('create-link-report-btn')
         .addEventListener('click', showLinkReportPopup);
 
-        //window.showLinkReportPopup = showLinkReportPopup;
-
-        // IMPROVED showLinkReportPopup function
         function showLinkReportPopup() {
             // Remove any existing popup
             document.querySelectorAll('.link-report-popup').forEach(el => el.remove());
@@ -1834,7 +1815,7 @@ function showSatellitePopup(satId) {
             };
         }
 
-        // NEW: Enhanced report display function
+        // Report display function
         function displayFormattedReport(sat, gs, startTs, endTs, accessPeriods, fileExt, container, saveBtn) {
             console.log('Access periods found:', accessPeriods.length); // Debug log
             
@@ -1958,13 +1939,11 @@ function showSatellitePopup(satId) {
                 `;
             }
 
-            // CRITICAL FIX: Change the container's class to prevent CSS conflicts
+
             container.className = 'link-report-content';
             
-            // Combine summary and detailed data and set it all at once
             container.innerHTML = summaryHtml + detailedDataHtml;
             
-            // CRITICAL FIX: Show and enable save button
             saveBtn.disabled = false;
             saveBtn.style.display = 'inline-block';
             
@@ -2008,7 +1987,7 @@ window.showLinkReportPopup = showLinkReportPopup;
             let prevVis = false;
             let visStartCoarse = null;
 
-            // CRITICAL FIX: Use a consistent time base for all calculations
+            // Use a consistent time base for all calculations
             // The satellite's epoch becomes our reference point
             const referenceEpoch = sat.initialEpochUTC;
 
@@ -2033,7 +2012,6 @@ window.showLinkReportPopup = showLinkReportPopup;
                 
                 // Update satellite position
                 sat.updatePosition(simSec, 0);
-                // IMPROVED: More robust visibility check
                 return checkVisibilityImproved(sat, gs);
             }
 
@@ -2101,12 +2079,10 @@ window.showLinkReportPopup = showLinkReportPopup;
                 }
             }
 
-            // CRITICAL FIX: Restore the original simulation state
             core.setTotalSimulatedTime(oldT);
             core.setCurrentEpochUTC(oldE);
             core.earthGroup.rotation.y = oldRot;
             
-            // CRITICAL FIX: Re-initialize Earth rotation manager to original epoch
             if (window.earthRotationManager) {
                 window.earthRotationManager.initialize(oldE);
             }
@@ -2137,7 +2113,6 @@ window.showLinkReportPopup = showLinkReportPopup;
                 return false;
             }
 
-            // CRITICAL FIX: Improved beam cone check with better numerical stability
             const satToGs = gsWorldPos.clone().sub(satWorldPos);
             const satToGsDistance = satToGs.length();
             
@@ -2373,10 +2348,10 @@ function generateLinkReportContent(sat, gs, startTs, endTs, accessPeriods, fileE
 // ------------------------------------- GENERAL MODAL AND ALERT FUNCTIONS ---------------------------------------
         window.showCustomConfirmation = showCustomConfirmation;
         window.showCustomAlert = showCustomAlert;
-        window.closepopup = closepopup; // Added
-        window.formatNumberInput = formatNumberInput; // Added if it's used elsewhere in HTML (it is in `showModal` helper)
-        window.showInputError = showInputError; // Added as it's used within your script
-        window.clearInputError = clearInputError; // Added as it's used within your script
+        window.closepopup = closepopup;
+        window.formatNumberInput = formatNumberInput; 
+        window.showInputError = showInputError; 
+        window.clearInputError = clearInputError; 
 
         function showCustomConfirmation(message, title = 'Konfirmasi', confirmButtonText = 'OK', onConfirmCallback, showCancelButton = false) {
             closeAllCustomPopups();
@@ -2388,7 +2363,7 @@ function generateLinkReportContent(sat, gs, startTs, endTs, accessPeriods, fileE
 
             const confirmButton = document.createElement('button');
             confirmButton.type = 'button';
-            confirmButton.classList.add('btn', 'btn-primary', 'custom-alert-ok-btn'); // Menambahkan kelas 'custom-alert-ok-btn'
+            confirmButton.classList.add('btn', 'btn-primary', 'custom-alert-ok-btn'); 
             confirmButton.textContent = confirmButtonText;
             confirmButton.onclick = () => {
                 const modal = bootstrap.Modal.getInstance(document.getElementById('customAlertModal'));
@@ -2685,7 +2660,6 @@ function generateLinkReportContent(sat, gs, startTs, endTs, accessPeriods, fileE
                 }
 
                 if (!fileName) { showInputError('fileNameInput', "Satellite Name cannot be empty."); hasError = true; }
-                // Modifikasi baris ini:
                 else if ((!editingFileName && fileOutputs.has(fileName)) || groundStations.has(fileName) || linkBudgetAnalysis.has(fileName)) {
                     showInputError('fileNameInput', `Name "${fileName}" already exists as another file type or is already in use. Please use a different name.`); hasError = true;
                 } else { clearInputError('fileNameInput'); }
@@ -2724,7 +2698,7 @@ function generateLinkReportContent(sat, gs, startTs, endTs, accessPeriods, fileE
 
                 // Convert the input to UTC timestamp with offset
                 const utcOffset = parseInt(document.getElementById('utcOffsetInput').value);
-                window.utcOffset = utcOffset; // Add this line
+                window.utcOffset = utcOffset; 
                 const [datePart, timePart] = epochInput.split('T');
                 const [year, month, day] = datePart.split('-').map(Number);
                 const [hour, minute] = timePart.split(':').map(Number);
@@ -2735,8 +2709,8 @@ function generateLinkReportContent(sat, gs, startTs, endTs, accessPeriods, fileE
                     eccentricity: eccentricity, raan: values.raan,
                     argumentOfPerigee: eccentricityType === 'elliptical' ? values.argumentOfPerigee : 0,
                     trueAnomaly: values.trueAnomaly,
-                    epoch: epochInput, // This is the string epoch for storage
-                    utcTimestamp: utcTimestamp, // Store the UTC offset for later use
+                    epoch: epochInput, 
+                    utcTimestamp: utcTimestamp, 
                     utcOffset: utcOffset,  
                     beamwidth: values.beamwidth,
                     fileType: 'single'
@@ -2766,10 +2740,8 @@ function generateLinkReportContent(sat, gs, startTs, endTs, accessPeriods, fileE
                     setActiveControlButton('pauseButton');
                 }
 
-                // updateOutputSidebar(newData); //(Removed to avoid double update) - Keep commented as selectSatellite handles it
                 addFileToResourceSidebar(fileName, newData, 'single');
-                //updateSatelliteListUI();
-                //selectSatellite(newData.fileName); // Select and highlight the newly created satellite ( To Do :Removed)
+            
                 return true;
             }, () => {
                 document.getElementById('fileNameInput').value = '';
@@ -3094,7 +3066,6 @@ function generateLinkReportContent(sat, gs, startTs, endTs, accessPeriods, fileE
                 const [year, month, day] = datePart.split('-').map(Number);
                 const [hour, minute] = timePart.split(':').map(Number);
                 const utcTimestamp = Date.UTC(year, month - 1, day, hour - utcOffset, minute, 0);
-                //window.currentEpochUTC = utcTimestamp;
 
                 const newData = {
                     fileName, altitude: values.altitude, inclination: values.inclination,
@@ -3109,7 +3080,6 @@ function generateLinkReportContent(sat, gs, startTs, endTs, accessPeriods, fileE
                     satellites: [], 
                     ...constellationData
                 };
-                //fileOutputs.set(fileName, newData);
 
                 if (editingFileName) {
                     const oldData = { ...fileOutputs.get(editingFileName) };
@@ -3124,7 +3094,7 @@ function generateLinkReportContent(sat, gs, startTs, endTs, accessPeriods, fileE
 
                 // If the viewSimulation function exists, call it with the new data
                 if (window.viewSimulation) {
-                    // CRITICAL FIX: Set the epoch before viewSimulation
+
                     window.currentEpochUTC = utcTimestamp;
                     window.totalSimulatedTime = 0;
                     
@@ -3134,10 +3104,9 @@ function generateLinkReportContent(sat, gs, startTs, endTs, accessPeriods, fileE
                     setActiveControlButton('pauseButton');
                 }
 
-                // updateOutputSidebar(newData); //(Removed to avoid duplicate updates) - Keep commented as selectOutputItem handles it
+               
                 addFileToResourceSidebar(fileName, newData, 'constellation');
                 populateReportsList();
-                //updateSatelliteListUI();
                 return true;
             }, () => {
                 document.getElementById('fileNameInput').value = '';
@@ -3223,9 +3192,8 @@ function generateLinkReportContent(sat, gs, startTs, endTs, accessPeriods, fileE
                 let hasError = false;
                 const gsName = document.getElementById('gsNameInput').value.trim();
 
-// Di dalam NewGroundStationMenu() pada bagian onSave:
                 if (!gsName) { showInputError('gsNameInput', "Ground Station Name cannot be empty."); hasError = true; }
-                // Modifikasi baris ini:
+    
                 else if (fileOutputs.has(gsName) || (!editingFileName && groundStations.has(gsName)) || linkBudgetAnalysis.has(gsName)) {
                     showInputError('gsNameInput', `Name "${gsName}" already exists as another file type or is already in use. Please use a different name.`); hasError = true;
                 } else { clearInputError('gsNameInput'); }
@@ -3233,7 +3201,6 @@ function generateLinkReportContent(sat, gs, startTs, endTs, accessPeriods, fileE
                 const inputs = [
                     { id: 'latitudeInput', min: -90, max: 90, name: 'Latitude' },
                     { id: 'longitudeInput', min: -180, max: 180, name: 'Longitude' },
-                    //{ id: 'minElevationAngleInput', min: 0, max: 90, name: 'Minimum Elevation Angle' }
                 ];
 
                 const values = {};
@@ -3254,7 +3221,6 @@ function generateLinkReportContent(sat, gs, startTs, endTs, accessPeriods, fileE
                     name: gsName,
                     latitude: values.latitude,
                     longitude: values.longitude,
-                    //minElevationAngle: values.minElevationAngle,
                     altitude: 0,
                     fileType: 'groundStation'
                 };
@@ -3271,12 +3237,8 @@ function generateLinkReportContent(sat, gs, startTs, endTs, accessPeriods, fileE
                 saveFilesToLocalStorage();
                 if (window.addOrUpdateGroundStationInScene) {
                     window.addOrUpdateGroundStationInScene(newData);
-                    //window.selectedGroundStationId = newData.id; // Set selected ground station
                 }
-                // updateOutputSidebar(newData); // Keep commented as selectGroundStation handles it
                 addFileToResourceSidebar(gsName, newData, 'groundStation');
-                //updateSatelliteListUI();
-                //selectGroundStation(newData.id); // Select and highlight the newly created ground station
                 return true;
             }, () => {
                 document.getElementById('gsNameInput').value = '';
@@ -3450,10 +3412,7 @@ function NewLinkBudgetMenu(dataToPopulate = null) {
     }
 }
 
-/**
- * REVISED Link Budget Output for Two-Way Analysis, now with Edit button.
- * @param {object} data - The complete data object containing both inputs and calculated results.
- */
+
 function showLinkBudgetOutput(data) {
     const modalElement = document.getElementById('linkBudgetOutputModal');
     const modalBody = document.getElementById('linkBudgetOutputBody');
@@ -3467,7 +3426,7 @@ function showLinkBudgetOutput(data) {
         const powerInDbm = inputs[`${title.toLowerCase()}TransmitPower`] || 0;
         const gainInDbi = inputs[`${title.toLowerCase()}TxAntennaGain`] || 0;
 
-        // Convert power from dBm to dBW by subtracting 30, then add gain
+        // Convert power from dBm to dBW 
         const eirp = (powerInDbm - 30) + gainInDbi;
         return `
             <table class="table table-sm caption-top">
@@ -3570,7 +3529,7 @@ function showLinkBudgetOutput(data) {
         return;
     }
 
-    // NOTE: The modalBody HTML is unchanged. The fix is in how we populate it.
+
     const modalBody = `
         <div class="mb-3">
             <label for="fileNameInput" class="form-label">Satellite Name</label>
@@ -3653,8 +3612,6 @@ function showLinkBudgetOutput(data) {
         </div>
     `;
 
-    // NOTE: The onSave logic is unchanged. It correctly reads the local time
-    // from the input and converts it to a UTC timestamp.
     showModal("Edit Single Satellite", modalBody, () => {
         let hasError = false;
         const currentFileName = document.getElementById('fileNameInput').value;
@@ -3741,7 +3698,7 @@ function showLinkBudgetOutput(data) {
         const localDate = new Date(epochInput);
         //const utcTimestamp = localDate.getTime();
 
-         // Convert the input to UTC timestamp with offset
+        // Convert the input to UTC timestamp with offset
         const utcOffset = parseInt(document.getElementById('utcOffsetInput').value);
         window.utcOffset = utcOffset; // Add this line
         const [datePart, timePart] = epochInput.split('T');
@@ -3783,11 +3740,10 @@ function showLinkBudgetOutput(data) {
         return true;
     }, null, fileName, 'single');
 
-    // --- START OF CORRECTED FIX ---
+
     // Populate modal with existing data
     document.getElementById('fileNameInput').value = dataToEdit.fileName;
     document.getElementById('altitudeInput').value = dataToEdit.altitude;
-    // ... (populate other fields as before) ...
     document.getElementById('beamwidthInput').value = dataToEdit.beamwidth;
 
     // Pre-select the correct UTC offset from the original data
@@ -3813,7 +3769,6 @@ function showLinkBudgetOutput(data) {
     const localDateTimeString = `${year}-${month}-${day}T${hours}:${minutes}`;
 
     document.getElementById('epochInput').value = localDateTimeString;
-    // --- END OF CORRECTED FIX ---
 
     if (dataToEdit.eccentricity == 0) {
         document.getElementById('eccentricityCircular').checked = true;
@@ -4169,7 +4124,6 @@ function showLinkBudgetOutput(data) {
         return true;
     }, null, fileName, 'constellation');
 
-    // --- START OF CORRECTED FIX ---
     // Populate modal with existing data
     document.getElementById('fileNameInput').value = dataToEdit.fileName;
     document.getElementById('altitudeInput').value = dataToEdit.altitude;
@@ -4199,7 +4153,6 @@ function showLinkBudgetOutput(data) {
     const localDateTimeString = `${year}-${month}-${day}T${hours}:${minutes}`;
 
     document.getElementById('epochInput').value = localDateTimeString;
-    // --- END OF CORRECTED FIX ---
 
     if (dataToEdit.eccentricity == 0) {
         document.getElementById('eccentricityCircular').checked = true;
@@ -4430,8 +4383,6 @@ if (typeof window.setActiveControlButton === 'undefined') {
     // Tell Earth3Dsimulation.js to update its active meshes (sphere vs GLB)
     window.activeSatellites.forEach(sat => sat.setActiveMesh(window.closeViewEnabled));
 
-    // Adjust camera immediately with GSAP animation
-    // Temporarily disable OrbitControls to allow GSAP to control the camera smoothly
     core3D.controls.enabled = false;
     
     if (window.closeViewEnabled && selectedSat) {
@@ -4488,9 +4439,6 @@ if (typeof window.setActiveControlButton === 'undefined') {
         core3D.controls.object.up.copy(upDir);
         core3D.controls.update();
 
-        // These variables appear to be global; ensure they are declared elsewhere
-        // prevSatFollowPos.copy( selectedSat.mesh.position );
-        // followOffset.copy( core3D.camera.position ).sub( selectedSat.mesh.position );
 
         // lock zoom so they never tumble back to a global Earth view
         core3D.controls.minDistance = SCENE_EARTH_RADIUS * 0.005;   // Can zoom closer
@@ -4513,13 +4461,9 @@ if (typeof window.setActiveControlButton === 'undefined') {
         core3D.controls.enabled = true;
 
     } else { // Exiting close view, return to normal view
-        // ================== FIX START ==================
-        // This ensures that if the simulation was paused, the satellite meshes
-        // are updated to their final positions before the camera animates away.
         window.activeSatellites.forEach(sat => {
             sat.updatePosition(window.totalSimulatedTime, 0);
         });
-        // =================== FIX END ===================
 
         core3D.controls.object.up.set(0, 1, 0); // Reset camera up direction
 
@@ -4705,19 +4649,9 @@ function generateAndSaveSelected(popup) {
     const step = parseInt(popup.querySelector('#saveStep').value, 10) * 1000;
     const fileExt = popup.querySelector('#saveFileExt').value || 'csv';
 
-    // --- ROBUST TIME PARSING LOGIC ---
-    // This helper function correctly converts the user's time input string and selected
-    // offset into an accurate UTC timestamp, ignoring the browser's local timezone.
-    const parseTimeToUTCTimestamp = (timeString, offsetHours) => {
-        // By appending ':00Z' to the user's input (e.g., "2025-08-01T01:29"),
-        // we create an unambiguous ISO 8601 string that JavaScript's Date object
-        // will parse as UTC, not as local time.
-        const dateParsedAsUTC = new Date(timeString + ':00Z');
 
-        // The user intended the time they typed to be in the timezone they selected
-        // via the 'utcOffset' field. To find the true moment in universal time,
-        // we must subtract that offset from the parsed time.
-        // For example, 01:29 in UTC+7 is equivalent to 18:29 on the previous day in UTC.
+    const parseTimeToUTCTimestamp = (timeString, offsetHours) => {
+        const dateParsedAsUTC = new Date(timeString + ':00Z');
         return dateParsedAsUTC.getTime() - (offsetHours * 3600000);
     };
 
@@ -4983,9 +4917,6 @@ function generateAndSaveSelected(popup) {
                 target: core3D.controls.target.clone()
             };
 
-            // Tentukan posisi target zoom in yang baru
-            // Kita akan mendekatkan kamera ke target kontrolnya (biasanya pusat Bumi atau satelit)
-            // Cara paling sederhana adalah mendekatkan kamera ke target kontrolnya
             const newTargetPosition = core3D.controls.target.clone(); // Ambil target saat ini
             const newCameraPosition = core3D.camera.position.clone();
             newCameraPosition.sub(newTargetPosition); // Vektor dari target ke kamera
@@ -5015,8 +4946,6 @@ function generateAndSaveSelected(popup) {
                 }
             });
 
-            // Animasikan juga target kontrol jika kamera bergerak relatif terhadap target
-            // Jika targetnya selalu (0,0,0) maka ini tidak perlu, tapi jika mengikuti satelit akan penting
             gsap.to(core3D.controls.target, {
                 duration: 0.5,
                 x: newTargetPosition.x,
@@ -5322,10 +5251,8 @@ function generateAndSaveSelected(popup) {
                 }
                 populateResourceTab();
                 populateReportsList();
-                // --- TEMPATKAN KODE INI DI SINI setelah populateReportsList(); ---
                 const outputTabBtn = document.getElementById('outputTabBtn');
-                const resourceTabBtn = document.getElementById('resourceTabBtn'); // Ini sebenarnya tidak digunakan dalam baris selanjutnya, tapi tidak masalah jika ada.
-                // --- END OF PLACEMENT ---
+                const resourceTabBtn = document.getElementById('resourceTabBtn'); 
             } else {
                 showCustomAlert("No actions to undo");
             }
@@ -5705,8 +5632,6 @@ window.updateNadirButtonStates = updateNadirButtonStates;
         }, 500);
     });
 
-    // Tambahkan fungsi ini di dalam <script type="module"> Anda,
-    // di scope global atau di dekat fungsi-fungsi pembantu lainnya.
     function closeAllCustomPopups() {
         // Menutup popup satelit/ground station yang sedang aktif
         if (window.activeSatellitePopup) {
@@ -5716,20 +5641,15 @@ window.updateNadirButtonStates = updateNadirButtonStates;
             window.activeSatellitePopup = null;
         }
 
-        // Menutup popup lain yang mungkin menggunakan class 'custom-popup'
-        // yang tidak dikelola oleh activeSatellitePopup
         document.querySelectorAll('.custom-popup').forEach(popup => {
-            // Hanya hapus jika popup tersebut bukan bagian dari Bootstrap modal
-            // Bootstrap modal memiliki class 'modal-dialog' pada elemen parent dari '.custom-popup'
-            // atau kita bisa membedakan berdasarkan ID yang diketahui (misal, untuk save popup)
+
             if (!popup.closest('.modal-dialog')) {
                 popup.remove();
             }
         });
     }
 
-    // Tambahkan di mana saja di scope <script type="module"> Anda
-// Fungsi ini akan membersihkan detail yang mungkin ditampilkan di tab Output
+
 function updateOutputSidebar(data = null) {
     // Implementasi sederhana: membersihkan area detail atau menampilkan info default
     const reportsList = document.getElementById('reports-list');
