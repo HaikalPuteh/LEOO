@@ -1,0 +1,55 @@
+{
+  "_parametersimulation-3a_QzFdB.js": {
+    "file": "assets/parametersimulation-3a_QzFdB.js",
+    "name": "parametersimulation"
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-NS0_ynA5.css",
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/js/Earth2Dsimulation.js": {
+    "file": "assets/Earth2Dsimulation-Rv4u5qNi.js",
+    "name": "Earth2Dsimulation",
+    "src": "resources/js/Earth2Dsimulation.js",
+    "isEntry": true,
+    "imports": [
+      "resources/js/orbitalCalculation.js",
+      "_parametersimulation-3a_QzFdB.js"
+    ]
+  },
+  "resources/js/Earth3Dsimulation.js": {
+    "file": "assets/Earth3Dsimulation-B4JSRHdx.js",
+    "name": "Earth3Dsimulation",
+    "src": "resources/js/Earth3Dsimulation.js",
+    "isEntry": true,
+    "imports": [
+      "resources/js/orbitalCalculation.js",
+      "_parametersimulation-3a_QzFdB.js"
+    ]
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-CkEWvlJW.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true
+  },
+  "resources/js/linkBudgetCalculations.js": {
+    "file": "assets/linkBudgetCalculations-l0sNRNKZ.js",
+    "name": "linkBudgetCalculations",
+    "src": "resources/js/linkBudgetCalculations.js",
+    "isEntry": true
+  },
+  "resources/js/orbitalCalculation.js": {
+    "file": "assets/orbitalCalculation-psKLm8rd.js",
+    "name": "orbitalCalculation",
+    "src": "resources/js/orbitalCalculation.js",
+    "isEntry": true
+  },
+  "resources/js/parametersimulation.js": {
+    "file": "assets/parametersimulation-l0sNRNKZ.js",
+    "name": "parametersimulation",
+    "src": "resources/js/parametersimulation.js",
+    "isEntry": true
+  }
+}
